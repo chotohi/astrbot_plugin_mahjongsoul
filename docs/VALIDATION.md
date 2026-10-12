@@ -1,4 +1,4 @@
-# 未发布：按 QQ 用户等待
+# v1.0.2 验证说明：按 QQ 用户等待
 
 在 Windows / Python 3.14.7 / AstrBot 4.28.2 环境运行 `python -m pytest tests -q --disable-warnings`：50 项测试通过，10 条弃用警告。
 

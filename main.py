@@ -48,7 +48,7 @@ class Majsoul(NativePlugin, Star):
         from .paifuya.data.api import normalize_api_key, prober
         loaded = bool(normalize_api_key(conf.majsoul_paifuya_api_key))
         yield event.plain_result(
-            '雀魂插件 v1.0.1\n牌谱屋密钥 majsoul_paifuya_api_key：' + ('已加载' if loaded else '未加载')
+            '雀魂插件 v1.0.2\n牌谱屋密钥 majsoul_paifuya_api_key：' + ('已加载' if loaded else '未加载')
             + '\nPT 走向查询及绘图：' + ('已开启' if conf.pt_query_enabled else '已关闭（未配置牌谱屋 Key）')
             + f'\nPT 图场次上限：{conf.majsoul_pt_max_games}'
             + f'\n牌谱屋错误等待：{conf.majsoul_paifuya_cooldown_seconds} 秒（按 QQ 用户独立计时）'

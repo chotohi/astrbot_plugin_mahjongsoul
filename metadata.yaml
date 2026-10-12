@@ -2,6 +2,6 @@ name: astrbot_plugin_mahjongsoul
 display_name: 雀魂查询
 desc: 从 nonebot_plugin_majsoul 移植的 AstrBot 雀魂插件，支持玩家数据查询、最近对局和 PT 图，并新增可选 AI 锐评、接口诊断与限流处理。
 author: ChoToHi
-version: v1.0.1
+version: v1.0.2
 astrbot_version: '>=4.28.2'
 repo: https://github.com/chotohi/astrbot_plugin_mahjongsoul

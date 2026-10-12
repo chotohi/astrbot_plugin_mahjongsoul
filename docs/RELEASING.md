@@ -15,7 +15,7 @@
 3. 提交代码后推送至本仓库，保留 LICENSE、NOTICE、UPSTREAM.md 和 licenses/。
 4. 如需分发版本附件，在 GitHub 创建对应版本的 Release，并上传生成的安装包。
 
-当前版本为 **v1.0.1**。版本变化时保持 metadata.yaml、main.py 中接口状态命令显示的版本号与安装包名称一致。版本变更及与 nonebot_plugin_majsoul 的功能差异见 CHANGELOG.md。
+当前版本为 **v1.0.2**。版本变化时保持 metadata.yaml、main.py 中接口状态命令显示的版本号与安装包名称一致。版本变更及与 nonebot_plugin_majsoul 的功能差异见 CHANGELOG.md。
 
 源码提交不代表已经创建 Release 或上架 AstrBot 插件市场；二者可另行办理。
 

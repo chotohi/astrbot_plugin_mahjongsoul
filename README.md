@@ -2,7 +2,7 @@
 
 从 [nonebot_plugin_majsoul](https://github.com/bot-ssttkkl/nonebot-plugin-majsoul) 移植的 AstrBot 雀魂插件，支持玩家数据查询、最近对局和 PT 图，并新增可选 AI 锐评、密钥开关、接口诊断与限流处理。
 
-维护者：**ChoToHi** · 当前版本：**v1.0.1** · Python **3.12+** · AstrBot **4.28.2+**
+维护者：**ChoToHi** · 当前版本：**v1.0.2** · Python **3.12+** · AstrBot **4.28.2+**
 
 感谢原作者 **ssttkkl** 及上游贡献者。本项目是独立维护的 AstrBot 移植版，沿用 **AGPL-3.0**，不属于雀魂或牌谱屋官方项目。
 
