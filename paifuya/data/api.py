@@ -1,4 +1,6 @@
 from asyncio import Semaphore, sleep
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from functools import partial
 from time import monotonic
@@ -31,12 +33,19 @@ _REQUEST_INTERVAL = 1.10  # Stay safely below the provider's maximum 1 QPS.
 _request_semaphore = Semaphore(1)
 _next_request_at = 0.0
 
-# The same Bearer token is shared by the 3-player and 4-player API clients.
-# A server-side 429 therefore needs to block that credential globally, not only
-# the PaifuyaApi instance that happened to receive the response.
-_blocked_until_by_auth: dict[str, float] = {}
-_blocked_error_by_auth: dict[str, PaifuyaRateLimitError] = {}
+# Identify the command sender, never the queried game nickname or API key.
+_request_user: ContextVar[Optional[str]] = ContextVar('paifuya_request_user', default=None)
+_cooldowns_by_user: dict[str, tuple[float, PaifuyaRateLimitError]] = {}
 _RETRYABLE_PAIFUYA_ERRORS = (HTTPError, PaifuyaRateLimitError)
+
+
+@contextmanager
+def paifuya_user(user_id: str):
+    token = _request_user.set(user_id)
+    try:
+        yield
+    finally:
+        _request_user.reset(token)
 
 
 def _is_retryable_http_error(error: Exception) -> bool:
@@ -72,20 +81,15 @@ class PaifuyaApi:
                 except Exception as e:
                     response_body = f"<failed to read response body: {type(e).__name__}>"
 
-                try:
-                    delay = float(response.headers.get('Retry-After', '60'))
-                    if not math.isfinite(delay) or delay < 0:
-                        delay = 60.0
-                except ValueError:
-                    delay = 60.0
+                delay = conf.majsoul_paifuya_cooldown_seconds
                 error = PaifuyaRateLimitError(
                     retry_after=delay,
                     auth_required=response.status_code in (401, 403) or 'x-cap-token-required' in response_body,
                     auth_sent=bool(request.headers.get('Authorization')),
                 )
-                auth_value = request.headers.get('Authorization', '')
-                _blocked_until_by_auth[auth_value] = monotonic() + delay
-                _blocked_error_by_auth[auth_value] = error
+                user_id = _request_user.get()
+                if user_id is not None:
+                    _cooldowns_by_user[user_id] = (monotonic() + delay, error)
                 logger.warning('Paifuya rejected request: status=%s; credential_sent=%s; retry_after=%s; authorization_required=%s',
                                response.status_code, error.auth_sent, delay, error.auth_required)
                 raise error
@@ -108,14 +112,18 @@ class PaifuyaApi:
         request_headers = {'Authorization': f'Bearer {key}'} if key else {}
         request_headers.update(headers or {})
         async with _request_semaphore:
-            auth_value = request_headers.get('Authorization', '')
-            blocked_until = _blocked_until_by_auth.get(auth_value, 0.0)
-            blocked_error = _blocked_error_by_auth.get(auth_value)
-            if blocked_error is not None and monotonic() < blocked_until:
-                raise blocked_error
-            if blocked_error is not None and monotonic() >= blocked_until:
-                _blocked_until_by_auth.pop(auth_value, None)
-                _blocked_error_by_auth.pop(auth_value, None)
+            now = monotonic()
+            for user_id, (until, _) in list(_cooldowns_by_user.items()):
+                if now >= until:
+                    _cooldowns_by_user.pop(user_id, None)
+            blocked = _cooldowns_by_user.get(_request_user.get())
+            if blocked is not None:
+                until, error = blocked
+                raise PaifuyaRateLimitError(
+                    retry_after=math.ceil(until - now),
+                    auth_required=error.auth_required,
+                    auth_sent=error.auth_sent,
+                )
             wait_time = _next_request_at - monotonic()
             if wait_time > 0:
                 await sleep(wait_time)

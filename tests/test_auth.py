@@ -50,6 +50,7 @@ async def test_configured_key_is_sent_for_search_and_records(monkeypatch, no_del
 @pytest.mark.parametrize('status,body', [(429, '[x-cap-token-required] CAPTCHA required'), (429, 'rate limited'), (401, 'unauthorized'), (403, 'forbidden')])
 async def test_rejections_stop_retry_and_enforce_cooldown(monkeypatch, no_delay, caplog, status, body):
     monkeypatch.setattr(conf, 'majsoul_paifuya_api_key', 'dummy-secret')
+    monkeypatch.setattr(module, 'monotonic', lambda: 100.0)
     requests = []
     def handler(request):
         requests.append(request)
@@ -57,9 +58,9 @@ async def test_rejections_stop_retry_and_enforce_cooldown(monkeypatch, no_delay,
     api = await mock_api(handler)
     try:
         for _ in range(2):
-            with pytest.raises(PaifuyaRateLimitError) as caught:
+            with module.paifuya_user('test:101'), pytest.raises(PaifuyaRateLimitError) as caught:
                 await api.search_player('test')
-            assert caught.value.auth_sent and caught.value.retry_after == 86400
+            assert caught.value.auth_sent and caught.value.retry_after == 3600
             assert '已携带' in str(caught.value)
         assert len(requests) == 1
         assert 'dummy-secret' not in caplog.text and 'dummy-secret' not in str(caught.value)

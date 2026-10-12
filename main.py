@@ -51,6 +51,7 @@ class Majsoul(NativePlugin, Star):
             '雀魂插件 v1.0.1\n牌谱屋密钥 majsoul_paifuya_api_key：' + ('已加载' if loaded else '未加载')
             + '\nPT 走向查询及绘图：' + ('已开启' if conf.pt_query_enabled else '已关闭（未配置牌谱屋 Key）')
             + f'\nPT 图场次上限：{conf.majsoul_pt_max_games}'
+            + f'\n牌谱屋错误等待：{conf.majsoul_paifuya_cooldown_seconds} 秒（按 QQ 用户独立计时）'
             + '\nAI 锐评：' + ('已开启' if conf.ai_comment_enabled else '已关闭（未配置 AI Key 或手动关闭）')
             + '\n当前牌谱屋镜像：' + prober.host
             + '\n牌谱屋请求使用 Authorization: Bearer，AI 锐评密钥不用于牌谱屋。'
@@ -85,6 +86,7 @@ class Majsoul(NativePlugin, Star):
         from .paifuya.parsers.limit_of_games import try_parse_limit_of_games
         from .paifuya.query_majsoul_info import handle_majsoul_info
         from .paifuya.query_majsoul_pt_plot import handle_majsoul_pt_plot
+        from .paifuya.data.api import paifuya_user
         event.stop_event()
         from .config import conf
         from .errors import PT_KEY_REQUIRED
@@ -109,14 +111,15 @@ class Majsoul(NativePlugin, Star):
                 return
             async def emit(chain):
                 await event.send(event.chain_result(chain))
-            async with self.query_lock:
-                async with asyncio.timeout(float(self.options.get('majsoul_query_timeout', 60)) or None):
-                    if '对局' in event.message_str.split()[0]:
-                        await self.records(event, name, num, kwargs)
-                    elif 'pt' in event.message_str.split()[0].lower():
-                        await handle_majsoul_pt_plot(emit, name, num, **kwargs)
-                    else:
-                        await handle_majsoul_info(emit, name, num, **kwargs)
+            with paifuya_user(self.user_key(event)):
+                async with self.query_lock:
+                    async with asyncio.timeout(float(self.options.get('majsoul_query_timeout', 60)) or None):
+                        if '对局' in event.message_str.split()[0]:
+                            await self.records(event, name, num, kwargs)
+                        elif 'pt' in event.message_str.split()[0].lower():
+                            await handle_majsoul_pt_plot(emit, name, num, **kwargs)
+                        else:
+                            await handle_majsoul_info(emit, name, num, **kwargs)
         except TimeoutError:
             yield event.plain_result('雀魂查询超时，请稍后重试')
         except Exception as exc:

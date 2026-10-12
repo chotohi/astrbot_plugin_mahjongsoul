@@ -71,7 +71,6 @@ def reset_api_state(monkeypatch):
     from astrbot_plugin_mahjongsoul.paifuya.data import api
     for key, value in Config().model_dump().items():
         monkeypatch.setattr(conf, key, value)
-    monkeypatch.setattr(api, '_blocked_until_by_auth', {})
-    monkeypatch.setattr(api, '_blocked_error_by_auth', {})
+    monkeypatch.setattr(api, '_cooldowns_by_user', {})
     monkeypatch.setattr(api, '_request_semaphore', asyncio.Semaphore(1))
     monkeypatch.setattr(api, '_next_request_at', 0.0)

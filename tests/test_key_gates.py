@@ -101,7 +101,7 @@ async def test_key_enables_pt_and_regular_info_still_works_without_keys(context,
     assert pt_handler.await_args.args[1:] == ('example', PlayerNum.three)
 
 
-async def test_shared_auth_cooldown_blocks_other_client(monkeypatch):
+async def test_same_user_cooldown_blocks_other_client(monkeypatch):
     from test_auth import mock_api
     monkeypatch.setattr(conf, 'majsoul_paifuya_api_key', 'dummy-paifuya-key')
     monkeypatch.setattr(api, '_REQUEST_INTERVAL', 0)
@@ -112,7 +112,7 @@ async def test_shared_auth_cooldown_blocks_other_client(monkeypatch):
     first, second = await mock_api(handler), await mock_api(handler)
     try:
         for client in (first, second):
-            with pytest.raises(PaifuyaRateLimitError):
+            with api.paifuya_user('test:101'), pytest.raises(PaifuyaRateLimitError):
                 await client.search_player('example')
         assert len(calls) == 1
     finally:

@@ -65,6 +65,12 @@
       "default": 60,
       "title": "Majsoul Ai Timeout",
       "type": "integer"
+    },
+    "majsoul_paifuya_cooldown_seconds": {
+      "default": 3600,
+      "minimum": 1,
+      "title": "Majsoul Paifuya Cooldown Seconds",
+      "type": "integer"
     }
   },
   "title": "Config",

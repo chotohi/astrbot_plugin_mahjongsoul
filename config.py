@@ -41,6 +41,7 @@ class Config(BaseModel):
     # Paifuya player_records API key. Loaded from
     # MAJSOUL_PAIFUYA_API_KEY in the AstrBot settings file.
     majsoul_paifuya_api_key: str = ""
+    majsoul_paifuya_cooldown_seconds: int = Field(default=3600, ge=1)
     majsoul_pt_max_games: int = Field(default=2000, ge=1)
 
     # AI锐评
