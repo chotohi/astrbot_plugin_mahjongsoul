@@ -3,6 +3,7 @@ httpx>=0.28,<1
 icmplib (>=3.0.3)
 matplotlib (>=3.6.2)
 monthdelta (>=0.9.1)
+pillow (>=9.0)
 pydantic>=2
 tzlocal (>=4.2)
 openai>=1
