@@ -1,3 +1,11 @@
+# v1.2.0 验证说明：双栏战绩卡
+
+在 Windows / Python 3.13 环境离线运行 6 个验证脚本，全部通过：`_test_analytics.py`（统计函数，含空数据/单局/断档）、`_test_layout.py`（双栏布局不重叠、两栏高度差 ≤40px、compact 高度 < full、2 局明显短于满局）、`_test_sparse.py`（2/6/12 局与含雷达的稀疏场景自适应高度）、`_test_e2e.py`（真实渲染落盘 940px 图片）、`_test_ai_card.py` 与 `_test_ai_fallback.py`（AI 锐评卡正常与降级路径）。测试全部使用本地构造对局数据，未访问牌谱屋接口。
+
+本次覆盖的修复：小字号（<13px）中文加粗不再用描边模拟，避免「连打」糊成黑块；PT 条形图的整数标注改用 `int(round())`，修复 float 格式化异常；雷达图坐标轴标签不再压到标题与条名；稀疏对局按实际行数收缩画布，不再固定 1166px。
+
+3 个版本号引用（metadata.yaml、main.py 接口状态命令、docs/RELEASING.md）已统一为 v1.2.0。历史版本的测试记录见下文。
+
 # v1.0.2 验证说明：按 QQ 用户等待
 
 在 Windows / Python 3.14.7 / AstrBot 4.28.2 环境运行 `python -m pytest tests -q --disable-warnings`：50 项测试通过，10 条弃用警告。

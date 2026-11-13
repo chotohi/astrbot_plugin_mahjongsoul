@@ -60,6 +60,41 @@
     "default": "你是一个雀魂猫娘。\n你需要根据玩家的雀魂统计数据进行锐评。\n\n要求：\n- 说话要像猫娘一样\n- 客观分析数据\n- 有节目效果\n- 可以玩梗\n- 不要太长\n- 80字以内\n- 不要回复很多换行符\n- 禁止 Markdown 和富文本\n- 禁止使用 **加粗文本**\n- 不要辱骂群友\n- 重点分析打法问题\n- 要给出问题的解决方案",
     "hint": "作为 role=system 发送给 AI，玩家统计作为单独的 user 消息。默认使用猫娘锐评提示词。"
   },
+  "majsoul_record_enabled": {
+    "description": "启用 /雀魂战绩 走势图",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后 /雀魂战绩 会提示功能已禁用。需要牌谱屋 Key 才能读取逐局记录。"
+  },
+  "majsoul_record_max_games": {
+    "description": "战绩图最多局数",
+    "type": "int",
+    "default": 50,
+    "hint": "2~500，默认 50。命令里「最近N场」超过此值时截断。局数越多、拉取越慢（每 500 条一次请求）。"
+  },
+  "majsoul_record_compare": {
+    "description": "战绩图附带段位均值对比",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后额外请求本人详细数据与同段位均值，绘制「关键指标对比」与「牌风雷达」。多两次请求，失败自动跳过。"
+  },
+  "majsoul_record_theme": {
+    "description": "战绩图配色（dark / light）",
+    "type": "string",
+    "default": "dark"
+  },
+  "majsoul_record_detail": {
+    "description": "战绩图信息量（full / compact）",
+    "type": "string",
+    "default": "full",
+    "hint": "full（默认）= 左栏段位分走势/素点走势/逐局PT/顺位走势 + 右栏全局总结/顺位分布/连打散打/最长连打段/打牌时段 + 通栏指标对比/牌风雷达/详细档案，940px 宽双栏，满载约 1170px 高（带指标与雷达约 1340px）。局数少时图表会自动压矮，2 局约 970px。compact = 省掉逐局PT、打牌时段、详细档案，约矮 18%，手机上更好读。"
+  },
+  "majsoul_record_ai_comment": {
+    "description": "战绩图附带 AI 锐评卡",
+    "type": "bool",
+    "default": true,
+    "hint": "战绩卡发送成功后再追加一张 AI 锐评卡。需要同时开启「启用 AI 锐评」并配置 AI Key / 地址 / 模型，否则自动跳过。生成失败只发一条失败提示，不影响战绩卡。"
+  },
   "majsoul_paifuya_cooldown_seconds": {
     "description": "牌谱屋错误等待时间（秒，按 QQ 用户）",
     "type": "int",

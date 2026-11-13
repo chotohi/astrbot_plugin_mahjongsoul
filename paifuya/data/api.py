@@ -336,6 +336,26 @@ class PaifuyaApi:
 
             end_time = records[-1].start_time - timedelta(seconds=1)
             
+    @auto_retry(
+        _RETRYABLE_PAIFUYA_ERRORS,
+        before_retry=partial(prober.select_host, exclude_current=True),
+        attempts=4,
+        retry_if=_is_retryable_http_error,
+        retry_delay=_http_retry_delay,
+    )
+    async def global_statistics(self, mode: int) -> dict:
+        """同房间模式、各段位的整体统计（用于与「段位均值」对比）。
+
+        返回结构：``{str(mode): {str(level_id): {num_players, basic, extended}}}``；
+        ``basic`` 含 ``rank_rates`` / ``avg_rank``，``extended`` 含和牌率等逐项指标。
+        这是牌谱屋前端「段位平均值」的同一数据源，无需鉴权。
+        """
+        resp = await self._get(
+            URL(f"https://{prober.host}/{self._baseurl}/global_statistics_2"),
+            params={"mode": str(int(mode))}
+        )
+        return resp.json()
+
     async def search_player_by_uid(self, uid: int):
         resp = await self._get(
             URL(f"https://{prober.host}/{self._baseurl}/player_stats/{uid}"),

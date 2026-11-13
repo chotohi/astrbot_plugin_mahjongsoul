@@ -44,6 +44,16 @@ class Config(BaseModel):
     majsoul_paifuya_cooldown_seconds: int = Field(default=3600, ge=1)
     majsoul_pt_max_games: int = Field(default=2000, ge=1)
 
+    # 战绩走势卡（/雀魂战绩）
+    majsoul_record_enabled: bool = True
+    majsoul_record_max_games: int = Field(default=50, ge=2, le=500)
+    majsoul_record_compare: bool = True
+    majsoul_record_theme: str = "dark"
+    majsoul_record_detail: str = "full"
+
+    # 战绩卡发完后追加 AI 锐评（需同时开启 AI 锐评并配置 AI Key）
+    majsoul_record_ai_comment: bool = True
+
     # AI锐评
 
     majsoul_ai_comment: bool = True

@@ -20,9 +20,10 @@ def package():
         'CHANGELOG.md', 'CONTRIBUTING.md', 'requirements-dev.txt',
         'pytest.ini', '.gitignore', '.gitattributes',
     )]
-    for directory in ('network', 'paifuya', 'utils', 'tests', 'tools'):
+    for directory in ('network', 'paifuya', 'utils', 'tests', 'tests_card', 'tools'):
         files.extend((ROOT / directory).rglob('*.py'))
     files.extend((ROOT / 'docs').glob('*.md'))
+    files.extend((ROOT / 'paifuya' / 'assets').rglob('*.png'))
     files.extend([ROOT / 'licenses/LICENSE', ROOT / 'licenses/Apache-2.0.txt',
                   ROOT / 'paifuya/NotoSansCJK-Regular.otf'])
     files = sorted(set(files))

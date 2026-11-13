@@ -8,8 +8,11 @@ python -m venv .venv
 # Windows PowerShell：.venv/Scripts/Activate.ps1
 python -m pip install -r requirements-dev.txt
 python -m pytest tests -q
+python -m pytest tests_card -q
 python tools/package.py
 ```
+
+`tests/` 需要 AstrBot 运行时；`tests_card/` 只依赖 Pillow，用于验证战绩卡的统计与版式，没装 AstrBot 时也能单独跑。
 
 开发依赖固定 AstrBot 4.28.2，用于复现本次离线验证。测试使用模拟 HTTP、临时目录及虚构凭证，不需要雀魂账号、牌谱屋密钥或真实 QQ 连接。
 

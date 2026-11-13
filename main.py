@@ -48,7 +48,7 @@ class Majsoul(NativePlugin, Star):
         from .paifuya.data.api import normalize_api_key, prober
         loaded = bool(normalize_api_key(conf.majsoul_paifuya_api_key))
         yield event.plain_result(
-            '雀魂插件 v1.0.2\n牌谱屋密钥 majsoul_paifuya_api_key：' + ('已加载' if loaded else '未加载')
+            '雀魂插件 v1.2.0\n牌谱屋密钥 majsoul_paifuya_api_key：' + ('已加载' if loaded else '未加载')
             + '\nPT 走向查询及绘图：' + ('已开启' if conf.pt_query_enabled else '已关闭（未配置牌谱屋 Key）')
             + f'\nPT 图场次上限：{conf.majsoul_pt_max_games}'
             + f'\n牌谱屋错误等待：{conf.majsoul_paifuya_cooldown_seconds} 秒（按 QQ 用户独立计时）'
@@ -78,7 +78,7 @@ class Majsoul(NativePlugin, Star):
         self.bindings.save()
         yield event.plain_result('已解除绑定')
 
-    @filter.regex(r'^/?雀魂(?:(?:三|四)麻)?(?:信息|查询|对局|[Pp][Tt](?:推移|走向)?(?:图|查询))(?:\s|$)', priority=20)
+    @filter.regex(r'^/?雀魂(?:(?:三|四)麻)?(?:信息|查询|对局|战绩|[Pp][Tt](?:推移|走向)?(?:图|查询))(?:\s|$)', priority=20)
     async def query(self, event: AstrMessageEvent):
         from .paifuya.data.models.player_num import PlayerNum
         from .paifuya.parsers.room_rank import try_parse_room_rank
@@ -86,14 +86,24 @@ class Majsoul(NativePlugin, Star):
         from .paifuya.parsers.limit_of_games import try_parse_limit_of_games
         from .paifuya.query_majsoul_info import handle_majsoul_info
         from .paifuya.query_majsoul_pt_plot import handle_majsoul_pt_plot
+        from .paifuya.query_majsoul_record import handle_majsoul_record, RECORD_KEY_REQUIRED
         from .paifuya.data.api import paifuya_user
         event.stop_event()
         from .config import conf
         from .errors import PT_KEY_REQUIRED
-        if 'pt' in event.message_str.split()[0].lower() and not conf.pt_query_enabled:
+        head = event.message_str.split()[0]
+        is_pt = 'pt' in head.lower()
+        is_record = '战绩' in head
+        if is_pt and not conf.pt_query_enabled:
             yield event.plain_result(PT_KEY_REQUIRED)
             return
-        num = PlayerNum.three if '三麻' in event.message_str.split()[0] else PlayerNum.four
+        if is_record and not conf.majsoul_record_enabled:
+            yield event.plain_result('战绩走势图已关闭，请管理员在插件配置中开启 majsoul_record_enabled。')
+            return
+        if is_record and not conf.pt_query_enabled:
+            yield event.plain_result(RECORD_KEY_REQUIRED)
+            return
+        num = PlayerNum.three if '三麻' in head else PlayerNum.four
         kwargs, names = {}, []
         try:
             for arg in arguments(event).split():
@@ -114,9 +124,11 @@ class Majsoul(NativePlugin, Star):
             with paifuya_user(self.user_key(event)):
                 async with self.query_lock:
                     async with asyncio.timeout(float(self.options.get('majsoul_query_timeout', 60)) or None):
-                        if '对局' in event.message_str.split()[0]:
+                        if is_record:
+                            await handle_majsoul_record(emit, name, num, qq=event.get_sender_id(), **kwargs)
+                        elif '对局' in head:
                             await self.records(event, name, num, kwargs)
-                        elif 'pt' in event.message_str.split()[0].lower():
+                        elif is_pt:
                             await handle_majsoul_pt_plot(emit, name, num, **kwargs)
                         else:
                             await handle_majsoul_info(emit, name, num, **kwargs)
